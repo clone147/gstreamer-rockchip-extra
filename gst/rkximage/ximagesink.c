@@ -27,6 +27,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 GST_DEBUG_CATEGORY (gst_debug_x_image_sink);
 #define GST_CAT_DEFAULT gst_debug_x_image_sink
@@ -1903,6 +1905,7 @@ gst_x_image_sink_finalize (GObject * object)
 static void
 gst_x_image_sink_init (GstRkXImageSink * ximagesink)
 {
+  char *env_val = NULL;
   ximagesink->display_name = NULL;
   ximagesink->xcontext = NULL;
   ximagesink->xwindow = NULL;
@@ -1922,6 +1925,10 @@ gst_x_image_sink_init (GstRkXImageSink * ximagesink)
   ximagesink->handle_expose = TRUE;
   ximagesink->display_ratio_enabled = TRUE;
 
+  env_val = getenv("DISPLAY_RATIO_DISABLED");
+  if (env_val != NULL && strcmp(env_val, "1") == 0) {
+    ximagesink->display_ratio_enabled = FALSE;
+  }
   ximagesink->fd = -1;
   ximagesink->conn_id = -1;
   ximagesink->plane_id = -1;

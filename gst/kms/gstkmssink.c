@@ -52,6 +52,8 @@
 
 #include <string.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "gstkmssink.h"
 #include "gstkmsutils.h"
@@ -1460,10 +1462,15 @@ gst_kms_sink_finalize (GObject * object)
 static void
 gst_kms_sink_init (GstKMSSink * sink)
 {
+  char *env_val = NULL;
   sink->fd = -1;
   sink->conn_id = -1;
   sink->plane_id = -1;
   sink->display_ratio_enabled = TRUE;
+  env_val = getenv("DISPLAY_RATIO_DISABLED");
+  if (env_val != NULL && strcmp(env_val, "1") == 0) {
+    sink->display_ratio_enabled = FALSE;
+  }
   gst_poll_fd_init (&sink->pollfd);
   sink->poll = gst_poll_new (TRUE);
   gst_video_info_init (&sink->vinfo);
