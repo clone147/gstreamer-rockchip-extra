@@ -48,12 +48,23 @@ G_BEGIN_DECLS
 #define GST_TYPE_RK_3A_MODE (gst_rk_3a_mode_get_type ())
     GType gst_rk_3a_mode_get_type (void);
 
+G_BEGIN_DECLS
+#define GST_TYPE_ARKS_USECASE (gst_arks_usecase_get_type ())
+    GType gst_arks_usecase_get_type (void);
+
 typedef enum
 {
   RK_3A_DISABLE = 0,
   RK_3A_AEAWB = 1,
   RK_3A_AEAWBAF = 2,
 } GstRk3AMode;
+G_END_DECLS
+
+typedef enum
+{
+  ARKS_USECASE_DUAL_IMX219 = 0,
+  ARKS_USECASE_IMX316 = 1,
+} GstArksUsecase;
 G_END_DECLS
 
 #define RK_V4L2_OBJECT_PROPS \
@@ -65,7 +76,8 @@ G_END_DECLS
     PROP_INPUT_CROP, \
     PROP_DISABLE_AUTOCONF, \
     PROP_3A_MODE, \
-    PROP_XML_FILE
+    PROP_XML_FILE, \
+    PROP_USECASE
 
 #define RK_V4L2_OBJECT \
   /* Rockchip Common */ \
@@ -79,7 +91,8 @@ G_END_DECLS
   /* Rockchip ISP */ \
   gboolean disable_autoconf; \
   GstRk3AMode isp_mode;  \
-  const gchar *xml_path;
+  const gchar *xml_path; \
+  GstArksUsecase usecase;
 
 struct _GstV4l2Object;
 

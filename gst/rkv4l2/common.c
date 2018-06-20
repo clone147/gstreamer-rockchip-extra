@@ -24,7 +24,7 @@
 
 #include "common.h"
 #include "v4l2_calls.h"
-
+#include <stdlib.h>
 #include <gst/gst-i18n-plugin.h>
 
 #define SYS_PATH		"/sys/class/video4linux/"
@@ -158,6 +158,22 @@ gst_rk_3a_mode_get_type (void)
   return rk_3a_mode;
 }
 
+GType
+gst_arks_usecase_get_type (void)
+{
+  static GType arks_usecase = 0;
+
+  if (!arks_usecase) {
+    static const GEnumValue usecase[] = {
+      {ARKS_USECASE_DUAL_IMX219, "ARKS_DUAL_IMX219", "0"},
+      {ARKS_USECASE_IMX316, "ARKS_IMX316", "1"},
+      {0, NULL, NULL}
+    };
+    arks_usecase = g_enum_register_static ("GstArksUsecase", usecase);
+  }
+  return arks_usecase;
+}
+
 void
 rk_common_install_rockchip_properties_helper (GObjectClass * gobject_class)
 {
@@ -197,6 +213,12 @@ rk_common_install_rockchip_properties_helper (GObjectClass * gobject_class)
   g_object_class_install_property (gobject_class, PROP_XML_FILE,
       g_param_spec_string ("tuning-xml-path", "tuning xml file path",
           " ", " ", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  /* usecase */
+  g_object_class_install_property (gobject_class, PROP_USECASE,
+      g_param_spec_enum ("usecase", "ARKS camera mode", " ",
+      GST_TYPE_ARKS_USECASE, ARKS_USECASE_DUAL_IMX219,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 gboolean
@@ -204,6 +226,7 @@ rk_common_set_property_helper (GstRKV4l2Object * v4l2object,
     guint prop_id, const GValue * value, GParamSpec * pspec)
 {
   char *string_val = NULL;
+  int ret = 0;
 
   /* common */
   switch (prop_id) {
@@ -249,6 +272,21 @@ rk_common_set_property_helper (GstRKV4l2Object * v4l2object,
       break;
     case PROP_XML_FILE:
       v4l2object->xml_path = g_value_dup_string (value);
+      break;
+    default:
+      break;
+  }
+
+  /* arks */
+  switch (prop_id) {
+    case PROP_USECASE:
+      v4l2object->usecase = g_value_get_enum (value);
+      if (v4l2object->usecase == ARKS_USECASE_IMX316)
+		ret = system("echo 1 > /sys/devices/platform/mipidphy0/usecase");
+	  else
+		ret = system("echo 0 > /sys/devices/platform/mipidphy0/usecase");
+	  if (ret < 0)
+		  printf("echo /sys/devices/platform/mipidphy0/usecase fail\n");
       break;
     default:
       break;
@@ -300,6 +338,15 @@ rk_common_get_property_helper (GstRKV4l2Object * v4l2object,
       break;
     case PROP_DISABLE_AUTOCONF:
       g_value_set_boolean (value, v4l2object->disable_autoconf);
+      break;
+    default:
+      break;
+  }
+
+  /* arks */
+  switch (prop_id) {
+    case PROP_USECASE:
+      g_value_set_enum (value, v4l2object->usecase);
       break;
     default:
       break;
