@@ -1069,7 +1069,7 @@ gst_x_image_sink_handle_xevents (GstRkXImageSink * ximagesink)
   }
 
   /* Handle DRM display */
-  if (ximagesink->paused
+  if (ximagesink->xwindow != NULL && ximagesink->paused
       && xwindow_get_window_position (ximagesink, NULL, NULL)) {
     /* if window stop moving, redraw display */
     g_mutex_unlock (&ximagesink->x_lock);
