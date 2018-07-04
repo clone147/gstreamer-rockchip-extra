@@ -19,6 +19,7 @@
 
 /* for XkbKeycodeToKeysym */
 #include <X11/XKBlib.h>
+#include <X11/extensions/Xrandr.h>
 
 #include <drm.h>
 #include <xf86drm.h>
@@ -380,20 +381,62 @@ xwindow_calculate_display_ratio (GstRkXImageSink * self, int *x, int *y,
 
   /* start with same height, because of interlaced video */
   /* check hd / dar_d is an integer scale factor, and scale wd with the PAR */
-  video_width = gst_util_uint64_scale_int (self->xwindow->height, dar_n, dar_d);
-  video_height = gst_util_uint64_scale_int (self->xwindow->width, dar_d, dar_n);
-  if (video_width < *window_width) {
-    *x += (self->xwindow->width - video_width) / 2;
-    *window_width = video_width;
-    *window_height = self->xwindow->height;
+  if(self->display_rotation == 1 || self->display_rotation == 3) {
+    video_width = gst_util_uint64_scale_int (self->xwindow->width, dar_n, dar_d);
+    video_height = gst_util_uint64_scale_int (self->xwindow->height, dar_d, dar_n);
+    if (video_width < *window_width) {
+      *x += (self->xwindow->height - video_width) / 2;
+      *window_width = video_width;
+      *window_height = self->xwindow->width;
+    } else {
+      *y += (self->xwindow->width - video_height) / 2;
+      *window_height = video_height;
+      *window_width = self->xwindow->height;
+    }
   } else {
-    *y += (self->xwindow->height - video_height) / 2;
-    *window_height = video_height;
-    *window_width = self->xwindow->width;
+    video_width = gst_util_uint64_scale_int (self->xwindow->height, dar_n, dar_d);
+    video_height = gst_util_uint64_scale_int (self->xwindow->width, dar_d, dar_n);
+    if (video_width < *window_width) {
+      *x += (self->xwindow->width - video_width) / 2;
+      *window_width = video_width;
+      *window_height = self->xwindow->height;
+    } else {
+      *y += (self->xwindow->height - video_height) / 2;
+      *window_height = video_height;
+      *window_width = self->xwindow->width;
+    }
   }
+  GST_DEBUG_OBJECT (self, "scaling to (%d,%d) %dx%d", *x, *y, *window_width, *window_height);
 
-  GST_DEBUG_OBJECT (self, "scaling to %dx%d", *window_width, *window_height);
+  return TRUE;
+}
 
+static gboolean
+xwindow_display_rotation (GstRkXImageSink * self, int *x, int *y,
+    gint * window_width, gint * window_height)
+{
+  int tmp_x, tmp_y, tmp_width;
+
+  if (self->display_rotation != 1 && self->display_rotation != 3)
+    return TRUE;
+
+  if (self->display_rotation == 1) {
+    //GST_INFO_OBJECT (self, "get rotation=RR_Rotate_90");
+    tmp_width = *window_width;
+    *window_width = *window_height;
+    *window_height = tmp_width;
+    tmp_x = *x;
+    *x = *y;
+    *y = self->vdisplay - tmp_x - *window_height;
+  } else if (self->display_rotation == 3) {
+    //GST_INFO_OBJECT (self, "get rotation=RR_Rotate_270");
+    tmp_width = *window_width;
+    *window_width = *window_height;
+    *window_height = tmp_width;
+    tmp_y = *y;
+    *y = *x;
+    *x = self->hdisplay - tmp_y - *window_width;
+  }
   return TRUE;
 }
 
@@ -578,7 +621,10 @@ gst_x_image_sink_ximage_put (GstRkXImageSink * ximagesink, GstBuffer * ximage)
 
   xwindow_get_render_rectangle (ximagesink, &result.x, &result.y, &result.w,
       &result.h);
-  
+
+  xwindow_display_rotation (ximagesink, &result.x, &result.y, &result.w,
+        &result.h);
+
   /* Enable the aspect ratio display */
   if (ximagesink->display_ratio_enabled)
     xwindow_calculate_display_ratio (ximagesink, &result.x, &result.y, &result.w,
@@ -1924,11 +1970,13 @@ gst_x_image_sink_init (GstRkXImageSink * ximagesink)
   ximagesink->handle_events = TRUE;
   ximagesink->handle_expose = TRUE;
   ximagesink->display_ratio_enabled = TRUE;
+  ximagesink->display_rotation = 0;
 
   env_val = getenv("DISPLAY_RATIO_DISABLED");
   if (env_val != NULL && strcmp(env_val, "1") == 0) {
     ximagesink->display_ratio_enabled = FALSE;
   }
+
   ximagesink->fd = -1;
   ximagesink->conn_id = -1;
   ximagesink->plane_id = -1;
@@ -1955,6 +2003,9 @@ gst_x_image_sink_start (GstBaseSink * bsink)
   drmModePlane *plane;
   gboolean universal_planes;
   gboolean ret;
+  Rotation rotation;
+  Window win;
+  XRRScreenConfiguration *xrr_config = NULL;
 
   self = GST_X_IMAGE_SINK (bsink);
   universal_planes = FALSE;
@@ -2029,6 +2080,21 @@ retry_find_plane:
   self->pollfd.fd = self->fd;
   gst_poll_add_fd (self->poll, &self->pollfd);
   gst_poll_fd_ctl_read (self->poll, &self->pollfd, TRUE);
+
+  /* get the orientation of screen */
+  win = DefaultRootWindow (self->xcontext->disp);
+  XRRRootToScreen (self->xcontext->disp, win);
+  xrr_config = XRRGetScreenInfo (self->xcontext->disp, win);
+  if (xrr_config != NULL) {
+    XRRConfigCurrentConfiguration (xrr_config, &rotation);
+    if (rotation == RR_Rotate_90) {
+      //GST_INFO_OBJECT (self, "get rotation=RR_Rotate_90 \n");
+	  self->display_rotation = 1;
+    } else if (rotation == RR_Rotate_270) {
+      //GST_INFO_OBJECT (self, "get rotation=RR_Rotate_270 \n");
+	  self->display_rotation = 3;
+    }
+  }
 
   ret = TRUE;
 

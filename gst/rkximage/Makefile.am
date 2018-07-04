@@ -21,6 +21,7 @@ libgstrkximage_la_LIBADD =				\
 	$(GST_VIDEO_LIBS)                       \
 	$(GST_ALLOCATORS_LIBS)                  \
 	$(GST_LIBS)				\
+	-lXrandr				\
 	$(NULL)
 
 libgstrkximage_la_LDFLAGS =			\
