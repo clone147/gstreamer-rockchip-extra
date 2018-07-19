@@ -185,6 +185,9 @@ struct _GstRkXImageSink
   guint32 last_fb_id;
   GstVideoRectangle save_rect;
   gboolean paused;
+  gboolean screenshot;
+  time_t screenshot_time;
+  gchar screenshot_key;
 };
 
 struct _GstRkXImageSinkClass

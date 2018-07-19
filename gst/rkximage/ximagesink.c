@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 GST_DEBUG_CATEGORY (gst_debug_x_image_sink);
 #define GST_CAT_DEFAULT gst_debug_x_image_sink
@@ -519,6 +520,36 @@ gst_x_image_sink_xwindow_draw_borders (GstRkXImageSink * ximagesink,
   }
 }
 
+static void *
+buffer_to_file (GstRkXImageSink * ximagesink, GstBuffer * buf)
+{
+  GstMapInfo map_info;
+  gchar filename[128];
+  //guint width, height;
+  //GstVideoFormat pixfmt;
+  //const char *pixfmt_str;
+
+  gst_buffer_map (buf, &map_info, GST_MAP_READ);
+
+  //width = GST_VIDEO_INFO_WIDTH (&(ximagesink->info));
+  //height = GST_VIDEO_INFO_HEIGHT (&(ximagesink->info));
+  //pixfmt = GST_VIDEO_INFO_FORMAT (&(ximagesink->info));
+  //pixfmt_str = gst_video_format_to_string (pixfmt);
+  //printf ("===================================\n");
+  //printf (" GStreamer video stream information:\n");
+  //printf (" size: %u x %u pixel\n", width, height);
+  //printf (" pixel format: %s\n", pixfmt_str);
+  //printf (" buffer size: %d %d\n", size,map_info.size);
+  //printf ("===================================\n");
+
+  g_snprintf (filename, sizeof (filename), "screenshot.yuv");
+  g_file_set_contents (filename, (const gchar *)map_info.data, map_info.size, NULL);
+
+  gst_buffer_unmap (buf, &map_info);
+
+  return 0;
+}
+
 /* This function puts a GstXImageBuffer on a GstRkXImageSink's window */
 static gboolean
 gst_x_image_sink_ximage_put (GstRkXImageSink * ximagesink, GstBuffer * ximage)
@@ -603,6 +634,16 @@ gst_x_image_sink_ximage_put (GstRkXImageSink * ximagesink, GstBuffer * ximage)
   /* drm stuff */
   mem = gst_buffer_peek_memory (ximage, 0);
   gst_buffer_ref (ximage);
+  if (ximagesink->screenshot == TRUE) {
+	time_t timep;
+	time(&timep);
+	ximagesink->screenshot = FALSE;
+	if (timep >= ximagesink->screenshot_time && timep <= ximagesink->screenshot_time + 1) {
+		buffer_to_file(ximagesink,ximage);
+	} else {
+		printf("screenshot, timeout \n");
+	}
+  }
 
   ret = drmPrimeFDToHandle
       (ximagesink->fd, gst_dmabuf_memory_get_fd (mem), &gem_handle);
@@ -1011,7 +1052,7 @@ gst_x_image_sink_handle_xevents (GstRkXImageSink * ximagesink)
           ButtonPressMask | ButtonReleaseMask, &e)) {
     KeySym keysym;
     const char *key_str = NULL;
-
+    static int during_keypress = 0;
     /* We lock only for the X function call */
     g_mutex_unlock (&ximagesink->x_lock);
     g_mutex_unlock (&ximagesink->flow_lock);
@@ -1049,6 +1090,15 @@ gst_x_image_sink_handle_xevents (GstRkXImageSink * ximagesink)
             e.xkey.keycode, e.xkey.x, e.xkey.y, key_str);
         gst_navigation_send_key_event (GST_NAVIGATION (ximagesink),
             e.type == KeyPress ? "key-press" : "key-release", key_str);
+		if (e.type == KeyPress && strncmp(key_str,&ximagesink->screenshot_key,1) == 0 && during_keypress == 0) {
+			time_t timep;
+			time(&timep);
+			ximagesink->screenshot_time = timep;
+			during_keypress = 1;
+			ximagesink->screenshot = TRUE;
+		} else if (e.type == KeyRelease && strncmp(key_str,&ximagesink->screenshot_key,1) == 0 && during_keypress == 1) {
+			during_keypress = 0;
+		}
         break;
       default:
         GST_DEBUG_OBJECT (ximagesink, "ximagesink unhandled X event (%d)",
@@ -1971,6 +2021,14 @@ gst_x_image_sink_init (GstRkXImageSink * ximagesink)
   ximagesink->handle_expose = TRUE;
   ximagesink->display_ratio_enabled = TRUE;
   ximagesink->display_rotation = 0;
+  ximagesink->screenshot = FALSE;
+  ximagesink->screenshot_time = 0;
+  ximagesink->screenshot_key = 0;
+
+  env_val = getenv("SCREENSHOT_KEY");
+  if (env_val != NULL) {
+    strncpy(&ximagesink->screenshot_key,env_val,1);
+  }
 
   env_val = getenv("DISPLAY_RATIO_DISABLED");
   if (env_val != NULL && strcmp(env_val, "1") == 0) {
