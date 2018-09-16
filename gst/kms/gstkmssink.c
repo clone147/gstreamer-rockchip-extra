@@ -1223,10 +1223,10 @@ gst_kms_sink_set_render_rectangle (GstVideoOverlay * overlay,
   GstKMSSink *kmssink = GST_KMS_SINK (overlay);
 
   if (x >= 0 && y >= 0 && width > 0 && height > 0) {
-    kmssink->save_rect.w = width;
-    kmssink->save_rect.h = height;
-    kmssink->save_rect.x = x;
-    kmssink->save_rect.y = y;
+    kmssink->save_rect.w = 300;
+    kmssink->save_rect.h = 200;
+    kmssink->save_rect.x = 100;
+    kmssink->save_rect.y = 100;
   }
 }
 
