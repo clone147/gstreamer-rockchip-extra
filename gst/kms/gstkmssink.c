@@ -1223,10 +1223,10 @@ gst_kms_sink_set_render_rectangle (GstVideoOverlay * overlay,
   GstKMSSink *kmssink = GST_KMS_SINK (overlay);
 
   if (x >= 0 && y >= 0 && width > 0 && height > 0) {
-    kmssink->save_rect.w = 300;
-    kmssink->save_rect.h = 200;
-    kmssink->save_rect.x = 100;
-    kmssink->save_rect.y = 100;
+    kmssink->save_rect.w = width;
+    kmssink->save_rect.h = height;
+    kmssink->save_rect.x = x;
+    kmssink->save_rect.y = y;
   }
 }
 
@@ -1305,6 +1305,16 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.w = self->hdisplay;
   dst.h = self->vdisplay;
 
+
+dst.x = 300;
+dst.y = 300;
+dst.w = 400;
+dst.h = 300;
+
+
+
+
+
   gst_video_sink_center_rect (src, dst, &result, TRUE);
 
   if (crop) {
@@ -1330,6 +1340,9 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   GST_TRACE_OBJECT (self,
       "drmModeSetPlane at (%i,%i) %ix%i sourcing at (%i,%i) %ix%i",
       result.x, result.y, result.w, result.h, src.x, src.y, src.w, src.h);
+
+
+
 
   ret = drmModeSetPlane (self->fd, self->plane_id, self->crtc_id, fb_id, 0,
       result.x, result.y, result.w, result.h,
