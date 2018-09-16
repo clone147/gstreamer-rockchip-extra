@@ -1305,16 +1305,6 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.w = self->hdisplay;
   dst.h = self->vdisplay;
 
-
-dst.x = 300;
-dst.y = 300;
-dst.w = 400;
-dst.h = 300;
-
-
-
-
-
   gst_video_sink_center_rect (src, dst, &result, TRUE);
 
   if (crop) {
@@ -1341,6 +1331,10 @@ dst.h = 300;
       "drmModeSetPlane at (%i,%i) %ix%i sourcing at (%i,%i) %ix%i",
       result.x, result.y, result.w, result.h, src.x, src.y, src.w, src.h);
 
+      result.x = 300;
+      result.y = 300;
+      result.w = 400;
+      result.h = 300;
 
 
 
