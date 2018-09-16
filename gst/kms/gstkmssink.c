@@ -1305,8 +1305,6 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.w = self->hdisplay;
   dst.h = self->vdisplay;
 
-  dst.w =  400;
-  dst.h = 300;
 
 
   gst_video_sink_center_rect (src, dst, &result, TRUE);
