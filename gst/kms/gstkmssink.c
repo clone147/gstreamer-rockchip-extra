@@ -1249,7 +1249,7 @@ gst_kms_sink_navigation_init (GstNavigationInterface * iface)
   iface->send_event = gst_kms_sink_navigation_send_event;
 }
 
-char_int(char *d) { int sum = atoi(d); return(int) sum; }
+//char_int(char *d) { int sum = atoi(d); return(int) sum; }
 
 
 static GstFlowReturn
@@ -1340,14 +1340,14 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   env_valh = getenv("GST_KMS_H");
 
   if (env_valx != NULL)
-       dst.x = char_int(envvalx);
-  if (env_valy != NULL)
+       dst.x = atoi(envvalx); //char_int(envvalx);
+/*  if (env_valy != NULL)
        dst.y = char_int(envvaly);
 
   if (env_valw != NULL)
        dst.w = char_int(envvalw);
   if (env_valh != NULL)
-       dst.h = char_int(envvalh);
+       dst.h = char_int(envvalh);*/
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
