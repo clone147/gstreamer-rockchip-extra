@@ -1249,6 +1249,9 @@ gst_kms_sink_navigation_init (GstNavigationInterface * iface)
   iface->send_event = gst_kms_sink_navigation_send_event;
 }
 
+char_int(char *d) { int sum = atoi(d); return(int) sum; }
+
+
 static GstFlowReturn
 gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
 {
@@ -1325,6 +1328,29 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.w = 400;
   dst.h = 300;
 
+
+  char *env_valx = NULL;
+  char *env_valy = NULL;
+  char *env_valw = NULL;
+  char *env_valh = NULL;
+
+  env_valx = getenv("GST_KMS_X");
+  env_valy = getenv("GST_KMS_Y");
+  env_valw = getenv("GST_KMS_W");
+  env_valh = getenv("GST_KMS_H");
+
+  if (env_valx != NULL)
+       dst.x = char_int(envvalx);
+  if (env_valy != NULL)
+       dst.y = char_int(envvaly);
+
+  if (env_valw != NULL)
+       dst.w = char_int(envvalw);
+  if (env_valh != NULL)
+       dst.h = char_int(envvalh);
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if (self->display_ratio_enabled) {
      gst_video_sink_center_rect (src, dst, &result, TRUE);
@@ -1567,7 +1593,7 @@ gst_kms_sink_class_init (GstKMSSinkClass * klass)
    */
   g_properties[PROP_FORCE_MODESETTING] =
       g_param_spec_boolean ("force-modesetting", "Force modesetting",
-      "When enabled, the sink try to configure the display mode", FALSE,
+      "When enabled,,,,,,,,,,, the sink try to configure the display mode", FALSE,
       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT);
 
   g_object_class_install_properties (gobject_class, PROP_N, g_properties);
