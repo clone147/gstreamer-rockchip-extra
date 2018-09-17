@@ -1506,7 +1506,7 @@ gst_kms_sink_class_init (GstKMSSinkClass * klass)
   videosink_class = GST_VIDEO_SINK_CLASS (klass);
 
   gst_element_class_set_static_metadata (element_class, "KMS video sink",
-      "Sink/Video", GST_PLUGIN_DESC, "Víctor Jáquez <vjaquez@igalia.com>");
+      "Sink/Video", GST_PLUGIN_DESC, "Víctor Jáquez <vjaquez@igalia.com>, modified for URVE");
 
   caps = gst_kms_sink_caps_template_fill ();
   gst_element_class_add_pad_template (element_class,
