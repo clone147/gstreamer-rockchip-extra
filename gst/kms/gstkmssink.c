@@ -1339,14 +1339,14 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   env_valh = getenv("GST_KMS_H");
 
   if (env_valx != NULL)
-       dst.x = atoi(envvalx); //char_int(envvalx);
-/*  if (env_valy != NULL)
-       dst.y = char_int(envvaly);
+       dst.x = atoi(env_valx); //char_int(envvalx);
+   if (env_valy != NULL)
+       dst.y = char_int(env_valy);
 
   if (env_valw != NULL)
-       dst.w = char_int(envvalw);
+       dst.w = char_int(env_valw);
   if (env_valh != NULL)
-       dst.h = char_int(envvalh);*/
+       dst.h = char_int(env_valh);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
