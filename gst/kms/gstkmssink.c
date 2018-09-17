@@ -1266,6 +1266,10 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   GstVideoRectangle dst = { 0, };
   GstVideoRectangle result;
   GstFlowReturn res;
+  char *env_valx = NULL;
+  char *env_valy = NULL;
+  char *env_valw = NULL;
+  char *env_valh = NULL;
 
   self = GST_KMS_SINK (vsink);
 
@@ -1328,11 +1332,6 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.w = 400;
   dst.h = 300;*/
 
-
-  char *env_valx = NULL;
-  char *env_valy = NULL;
-  char *env_valw = NULL;
-  char *env_valh = NULL;
 
   env_valx = getenv("GST_KMS_X");
   env_valy = getenv("GST_KMS_Y");
