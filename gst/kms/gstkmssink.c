@@ -1333,10 +1333,10 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   dst.h = 300;*/
 
 
-  env_valx = getenv("GST_KMS_X");
-  env_valy = getenv("GST_KMS_Y");
-  env_valw = getenv("GST_KMS_W");
-  env_valh = getenv("GST_KMS_H");
+  env_valx = getenv("URVE_KMS_X");
+  env_valy = getenv("URVE_KMS_Y");
+  env_valw = getenv("URVE_KMS_W");
+  env_valh = getenv("URVE_KMS_H");
 
   if (env_valx != NULL)
        dst.x = atoi(env_valx); //char_int(envvalx);
