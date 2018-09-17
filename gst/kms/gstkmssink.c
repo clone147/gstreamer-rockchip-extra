@@ -1341,12 +1341,12 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   if (env_valx != NULL)
        dst.x = atoi(env_valx); //char_int(envvalx);
    if (env_valy != NULL)
-       dst.y = char_int(env_valy);
+       dst.y = atoi(env_valy);
 
   if (env_valw != NULL)
-       dst.w = char_int(env_valw);
+       dst.w = atoi(env_valw);
   if (env_valh != NULL)
-       dst.h = char_int(env_valh);
+       dst.h = atoi(env_valh);
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
