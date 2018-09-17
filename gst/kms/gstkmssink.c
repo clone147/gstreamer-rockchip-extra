@@ -1318,6 +1318,14 @@ gst_kms_sink_show_frame (GstVideoSink * vsink, GstBuffer * buf)
   }
 
   kms_get_render_rectangle (self, &dst.x, &dst.y, &dst.w, &dst.h);
+
+  ////////////////////////////////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  dst.x = 100;
+  dst.y = 100;
+  dst.w = 400;
+  dst.h = 300;
+
+
   if (self->display_ratio_enabled) {
      gst_video_sink_center_rect (src, dst, &result, TRUE);
   } else {
