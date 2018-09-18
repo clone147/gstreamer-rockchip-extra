@@ -1592,7 +1592,7 @@ gst_kms_sink_class_init (GstKMSSinkClass * klass)
    */
   g_properties[PROP_FORCE_MODESETTING] =
       g_param_spec_boolean ("force-modesetting", "Force modesetting",
-      "When enabled,,,,,,,,,,, the sink try to configure the display mode", FALSE,
+      "When enabled, the sink try to configure the display mode", FALSE,
       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT);
 
   g_object_class_install_properties (gobject_class, PROP_N, g_properties);
