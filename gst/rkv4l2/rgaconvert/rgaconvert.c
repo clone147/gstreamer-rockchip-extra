@@ -919,11 +919,11 @@ gst_rga_convert_prepare_output_buffer (GstBaseTransform * trans,
   struct timespec start, end;
   unsigned long long time_consumed;
 
-/*  if (gst_base_transform_is_passthrough (trans)) {
+  if (gst_base_transform_is_passthrough (trans)) {
     GST_DEBUG_OBJECT (self, "Passthrough, no need to do anything");
     *outbuf = inbuf;
     goto beach;
-  }*/
+  }
 
   /* Ensure input internal pool is active */
   if (!gst_buffer_pool_is_active (pool)) {
